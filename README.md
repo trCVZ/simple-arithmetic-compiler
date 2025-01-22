@@ -2,6 +2,10 @@
 
 This project is an exploration of the basics of creating a compiler. By following the tutorial available on [Medium](https://medium.com/@trish07/building-a-simple-arithmetic-compiler-in-c-4f703fa9e6c1), I learned how to build a simple compiler for arithmetic expressions in C. The compiler currently supports only addition and subtraction operations, without parentheses or other operators.
 
+## Upcoming Features
+
+I plan to extend the compiler to support parentheses, multiplication, and division operations. This will allow for more complex arithmetic expressions and improve the overall functionality of the compiler.
+
 ## Objectives
 
 - Understand the fundamental concepts of compilers
@@ -18,7 +22,6 @@ This project is an exploration of the basics of creating a compiler. By followin
     ```bash
     cd simple-arithmetic-compiler
     gcc main.c
-    ```
     ```
 
 ## Usage
