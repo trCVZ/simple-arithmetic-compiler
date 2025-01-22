@@ -1,6 +1,6 @@
 # Simple Arithmetic Compiler
 
-This project is an exploration of the basics of creating a compiler. By following the tutorial available on [Medium](https://medium.com/@trish07/building-a-simple-arithmetic-compiler-in-c-4f703fa9e6c1){:target="_blank"}, I learned how to build a simple compiler for arithmetic expressions in C. The compiler currently supports only addition and subtraction operations, without parentheses or other operators.
+This project is an exploration of the basics of creating a compiler. By following the tutorial available on <a href="https://medium.com/@trish07/building-a-simple-arithmetic-compiler-in-c-4f703fa9e6c1" target="_blank">Medium</a>, I learned how to build a simple compiler for arithmetic expressions in C. The compiler currently supports only addition and subtraction operations, without parentheses or other operators.
 
 ## Upcoming Features
 
