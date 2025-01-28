@@ -7,6 +7,8 @@ typedef enum {
     TOKEN_NUMBER,
     TOKEN_PLUS,
     TOKEN_MINUS,
+    TOKEN_MULT,
+    TOKEN_DIVI,
     TOKEN_END
 } TokenType;
 
@@ -35,6 +37,16 @@ Token* tokenize(const char* input) {
             input++;
             position++;
         }
+        else if (*input == '*') {
+            tokens[position].type = TOKEN_MULT;
+            input++;
+            position++;
+        }
+        else if (*input == '/') {
+            tokens[position].type = TOKEN_DIVI;
+            input++;
+            position++;
+        }
         else {
             input++;
         }
@@ -43,32 +55,86 @@ Token* tokenize(const char* input) {
     return tokens;
 }
 
+Token* simplifiedTokens(Token* tokens, int* position) {
+    int newPosition = 0;
+    Token* newTokens = malloc(256 * sizeof(Token));
+
+    while (tokens[*position].type != TOKEN_END) {
+        if (tokens[*position].type == TOKEN_DIVI && tokens[*position+1].value != 0) {
+            newTokens[newPosition].value = tokens[*position-1].value / tokens[*position+1].value;
+            *position += 2;
+        }
+        else if (tokens[*position].type == TOKEN_MULT) {
+            newTokens[newPosition].value = tokens[*position-1].value * tokens[*position+1].value;
+            *position += 2;
+        }
+        else {
+            newTokens[newPosition] = tokens[*position];
+            newPosition++;
+            (*position)++;
+        }
+    }
+
+    newTokens[newPosition].type = TOKEN_END;
+    *position = newPosition;
+    return newTokens;
+}
+
 int parse(Token* tokens, long* result) {
     int position = 0;
     if (tokens[position].type != TOKEN_NUMBER) {
         return 0;
     }
 
-    *result = tokens[position].value;
     position++;
 
+    // Simplified
+    Token* newTokens = malloc(256 * sizeof(Token));
+    int newPosition = 0;
     while (tokens[position].type != TOKEN_END) {
-        if (tokens[position].type == TOKEN_PLUS) {
+        if (tokens[position].type == TOKEN_DIVI && tokens[position + 1].type != TOKEN_NUMBER) {
+            newTokens[newPosition].value = tokens[position-1].value / tokens[position+1].value;
+            newTokens[newPosition].type = TOKEN_NUMBER;
+            position+=2;
+            newPosition++;
+        } else if (tokens[position].type == TOKEN_MULT && tokens[position + 1].type != TOKEN_NUMBER) {
+            newTokens[newPosition].value = tokens[position-1].value * tokens[position+1].value;
+            newTokens[newPosition].type = TOKEN_NUMBER;
+            position+=2;
+            newPosition++;
+        } else {
+            newTokens[newPosition].type = tokens[position].type;
+            newTokens[newPosition].value = tokens[position].value;
+            newPosition++;
             position++;
-            if (tokens[position].type != TOKEN_NUMBER) {
-                return 0;
-            }
-            *result += tokens[position].value;
         }
-        else if (tokens[position].type == TOKEN_MINUS) {
+    }
+    newTokens[newPosition].type = TOKEN_END;
+
+    position = 0;
+    *result = newTokens[position].value;
+
+    position++;
+    
+    // Addition & subtraction
+    while (newTokens[position].type != TOKEN_END) {
+        if (newTokens[position].type == TOKEN_PLUS) {
             position++;
-            if (tokens[position].type != TOKEN_NUMBER) {
+            if (newTokens[position].type != TOKEN_NUMBER) {
                 return 0;
             }
-            *result -= tokens[position].value;
+            *result += newTokens[position].value;
+        }
+        else if (newTokens[position].type == TOKEN_MINUS) {
+            position++;
+            if (newTokens[position].type != TOKEN_NUMBER) {
+                return 0;
+            }
+            *result -= newTokens[position].value;
         }
         position++;
     }
+    free(newTokens);
     return 1;
 }
 
@@ -76,23 +142,21 @@ void generateAssembly(Token* tokens) {
     int position = 0;
     printf("Assembly-like Instructions :\n");
     if (tokens[position].type == TOKEN_NUMBER) {
-        printf("LOAD %ld\n", tokens[position].value);
+        printf("LOAD %d\n", tokens[position].value);
         position++;
     }
 
     while (tokens[position].type != TOKEN_END) {
         if (tokens[position].type == TOKEN_PLUS) {
             position++;
-            if (tokens[position].type == TOKEN_MINUS) {
-                printf("ADD %ld\n", tokens[position].value);
+            if (tokens[position].type == TOKEN_NUMBER) {
+                printf("ADD %d\n", tokens[position].value);
             }
         }
         else if (tokens[position].type == TOKEN_MINUS) {
             position++;
             if (tokens[position].type == TOKEN_NUMBER) {
-                if (tokens[position].type == TOKEN_NUMBER) {
-                    printf("SUB %ld\n", tokens[position].value);
-                }
+                printf("SUB %d\n", tokens[position].value);
             }
         }
         position++;
@@ -101,7 +165,7 @@ void generateAssembly(Token* tokens) {
 
 int main() {
     char input[256];
-    printf("Enter an arithmetic :");
+    printf("Enter an arithmetic expression: ");
     fgets(input, sizeof(input), stdin);
 
     size_t len = strlen(input);
@@ -112,11 +176,11 @@ int main() {
     Token* tokens = tokenize(input);
     long result;
     if (parse(tokens, &result)) {
-        printf("Result : %ld\n", result);
+        printf("Result: %ld\n", result);
         generateAssembly(tokens);
     }
     else {
-        printf("Invalid expression");
+        printf("Invalid expression\n");
     }
 
     free(tokens);
