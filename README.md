@@ -5,8 +5,10 @@ This project is an exploration of the basics of creating a compiler. By followin
 ## Upcoming Features
 
 I plan to extend the compiler to support parentheses, multiplication, and division operations.
-Multiplication and division done. ✅
 This will allow for more complex arithmetic expressions and improve the overall functionality of the compiler.
+<br>
+Multiplication and division done. ✅
+
 
 ## Objectives
 
