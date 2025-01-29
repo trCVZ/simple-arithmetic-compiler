@@ -7,13 +7,41 @@ typedef enum {
     TOKEN_NUMBER,
     TOKEN_PLUS,
     TOKEN_MINUS,
+    TOKEN_MULTI,
+    TOKEN_DIVI,
     TOKEN_END
 } TokenType;
 
 typedef struct {
     TokenType type;
-    int value;
+    long value;
 } Token;
+
+void printTokens(Token* tokens) {
+    int position = 0;
+    while (tokens[position].type != TOKEN_END) {
+        switch (tokens[position].type) {
+            case TOKEN_NUMBER:
+                printf("TOKEN_NUMBER: %ld\n", tokens[position].value);
+                break;
+            case TOKEN_PLUS:
+                printf("TOKEN_PLUS\n");
+                break;
+            case TOKEN_MINUS:
+                printf("TOKEN_MINUS\n");
+                break;
+            case TOKEN_MULTI:
+                printf("TOKEN_MULTI\n");
+                break;
+            case TOKEN_DIVI:
+                printf("TOKEN_DIVI\n");
+                break;
+            default:
+                break;
+        }
+        position++;
+    }
+}
 
 Token* tokenize(const char* input) {
     Token* tokens = malloc(256 * sizeof(Token));
@@ -35,6 +63,16 @@ Token* tokenize(const char* input) {
             input++;
             position++;
         }
+        else if (*input == '*') {
+            tokens[position].type = TOKEN_MULTI;
+            input++;
+            position++;
+        }
+        else if (*input == '/') {
+            tokens[position].type = TOKEN_DIVI;
+            input++;
+            position++;
+        }
         else {
             input++;
         }
@@ -49,28 +87,58 @@ int parse(Token* tokens, long* result) {
         return 0;
     }
 
-    *result = tokens[position].value;
-    position++;
+    
+    Token newTokens[256];
+    int newPosition = 0;
 
     while (tokens[position].type != TOKEN_END) {
-        if (tokens[position].type == TOKEN_PLUS) {
-            position++;
-            if (tokens[position].type != TOKEN_NUMBER) {
+        if (tokens[position].type == TOKEN_MULTI || tokens[position].type == TOKEN_DIVI) {
+            if (newPosition == 0) {
                 return 0;
             }
-            *result += tokens[position].value;
+
+            if (tokens[position].type == TOKEN_MULTI) {
+                newTokens[newPosition - 1].value = newTokens[newPosition - 1].value * tokens[position + 1].value;
+            } else if (tokens[position].type == TOKEN_DIVI) {
+                if (tokens[position + 1].value == 0) {
+                    printf("Error: Division by zero!\n");
+                    return 0;
+                }
+                newTokens[newPosition - 1].value = newTokens[newPosition - 1].value / tokens[position + 1].value;
+            }
+            position += 2;
+        } else {
+            newTokens[newPosition] = tokens[position];
+            position++;
+            newPosition++;
         }
-        else if (tokens[position].type == TOKEN_MINUS) {
+    }
+
+    newTokens[newPosition].type = TOKEN_END;
+    *result = newTokens[0].value;
+    position = 1;
+
+    while (newTokens[position].type != TOKEN_END) {
+        if (newTokens[position].type == TOKEN_PLUS) {
             position++;
-            if (tokens[position].type != TOKEN_NUMBER) {
+            if (newTokens[position].type != TOKEN_NUMBER) {
                 return 0;
             }
-            *result -= tokens[position].value;
+            
+            *result += newTokens[position].value;
+        }
+        else if (newTokens[position].type == TOKEN_MINUS) {
+            position++;
+            if (newTokens[position].type != TOKEN_NUMBER) {
+                return 0;
+            }
+            *result -= newTokens[position].value;
         }
         position++;
     }
     return 1;
 }
+
 
 void generateAssembly(Token* tokens) {
     int position = 0;
