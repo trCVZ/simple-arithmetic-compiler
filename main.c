@@ -9,6 +9,8 @@ typedef enum {
     TOKEN_MINUS,
     TOKEN_MULTI,
     TOKEN_DIVI,
+    TOKEN_OPEN_PAREN,
+    TOKEN_CLOSED_PAREN,
     TOKEN_END
 } TokenType;
 
@@ -21,23 +23,23 @@ void printTokens(Token* tokens) {
     int position = 0;
     while (tokens[position].type != TOKEN_END) {
         switch (tokens[position].type) {
-            case TOKEN_NUMBER:
-                printf("TOKEN_NUMBER: %ld\n", tokens[position].value);
-                break;
-            case TOKEN_PLUS:
-                printf("TOKEN_PLUS\n");
-                break;
-            case TOKEN_MINUS:
-                printf("TOKEN_MINUS\n");
-                break;
-            case TOKEN_MULTI:
-                printf("TOKEN_MULTI\n");
-                break;
-            case TOKEN_DIVI:
-                printf("TOKEN_DIVI\n");
-                break;
-            default:
-                break;
+        case TOKEN_NUMBER:
+            printf("TOKEN_NUMBER: %ld\n", tokens[position].value);
+            break;
+        case TOKEN_PLUS:
+            printf("TOKEN_PLUS\n");
+            break;
+        case TOKEN_MINUS:
+            printf("TOKEN_MINUS\n");
+            break;
+        case TOKEN_MULTI:
+            printf("TOKEN_MULTI\n");
+            break;
+        case TOKEN_DIVI:
+            printf("TOKEN_DIVI\n");
+            break;
+        default:
+            break;
         }
         position++;
     }
@@ -73,6 +75,16 @@ Token* tokenize(const char* input) {
             input++;
             position++;
         }
+        else if (*input == '(') {
+            tokens[position].type = TOKEN_OPEN_PAREN;
+            input++;
+            position++;
+        }
+        else if (*input == ')') {
+            tokens[position].type == TOKEN_CLOSED_PAREN;
+            input++;
+            position++;
+        }
         else {
             input++;
         }
@@ -87,7 +99,7 @@ int parse(Token* tokens, long* result) {
         return 0;
     }
 
-    
+
     Token newTokens[256];
     int newPosition = 0;
 
@@ -99,7 +111,8 @@ int parse(Token* tokens, long* result) {
 
             if (tokens[position].type == TOKEN_MULTI) {
                 newTokens[newPosition - 1].value = newTokens[newPosition - 1].value * tokens[position + 1].value;
-            } else if (tokens[position].type == TOKEN_DIVI) {
+            }
+            else if (tokens[position].type == TOKEN_DIVI) {
                 if (tokens[position + 1].value == 0) {
                     printf("Error: Division by zero!\n");
                     return 0;
@@ -107,7 +120,8 @@ int parse(Token* tokens, long* result) {
                 newTokens[newPosition - 1].value = newTokens[newPosition - 1].value / tokens[position + 1].value;
             }
             position += 2;
-        } else {
+        }
+        else {
             newTokens[newPosition] = tokens[position];
             position++;
             newPosition++;
@@ -124,7 +138,7 @@ int parse(Token* tokens, long* result) {
             if (newTokens[position].type != TOKEN_NUMBER) {
                 return 0;
             }
-            
+
             *result += newTokens[position].value;
         }
         else if (newTokens[position].type == TOKEN_MINUS) {
@@ -138,7 +152,6 @@ int parse(Token* tokens, long* result) {
     }
     return 1;
 }
-
 
 void generateAssembly(Token* tokens) {
     int position = 0;
