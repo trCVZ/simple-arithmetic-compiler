@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <header.h>
+#include "header.h"
 
 void printTokens(Token* tokens) {
     int position = 0;
